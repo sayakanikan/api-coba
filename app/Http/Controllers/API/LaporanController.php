@@ -16,11 +16,11 @@ class LaporanController extends Controller
      */
     public function index()
     {
-        $data = Laporan::getLaporan()->get();
+        $data = Laporan::all();
 
         return response()->json([
             'status'    => 200,
-            'message'   => 'data berhasil ditambahkan',
+            'message'   => 'data berhasil diambil',
             'data'      => $data
         ]);
     }
