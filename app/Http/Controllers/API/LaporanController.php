@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Laporan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class LaporanController extends Controller
 {
@@ -47,7 +48,7 @@ class LaporanController extends Controller
             'user_id'   => 'required',
             'laporan'   => 'required',
             'status'    => 'required',
-            'foto'      => 'file|mimes:png,jpg'
+            'foto'      => 'required'
         ]);
 
         try {
@@ -68,9 +69,9 @@ class LaporanController extends Controller
             //     echo 'error';  
             // }  
 
-            $fileName = time().$request->file('foto')->getClientOriginalName();
-            $path = $request->file('foto')->storeAs('uploads/laporans', $fileName);
-            $validasi['foto'] = $path;
+            // $fileName = time().$request->file('foto')->getClientOriginalName();
+            // $path = $request->file('foto')->storeAs('uploads/laporans', $fileName);
+            // $validasi['foto'] = $path;
             $response = Laporan::create($validasi);
 
             return response()->json([
@@ -209,4 +210,30 @@ class LaporanController extends Controller
     //     $data = DB::table('laporans')->where('laporan','like','%'.$keyword.'%')->get();
 
     // }
+
+    public function image(Request $request){
+        // $request->file('file')->store('images');
+        
+        // dd($uploadedFileUrl);
+
+        // $validasi = $request->validate([
+        //     'foto'      => 'file|mimes:jpg,png'
+        // ]);
+        try {
+            $uploadedFileUrl = Cloudinary::upload($request->file('foto')->getRealPath())->getSecurePath();
+
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'foto berhasil diupload',
+                'url'       => $uploadedFileUrl
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'   => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
+        // $response = cloudinary()->upload($request->file('file')->getRealPath())->getSecurePath();
+    }
 }
