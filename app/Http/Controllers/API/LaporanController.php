@@ -21,7 +21,7 @@ class LaporanController extends Controller
         return response()->json([
             'status'    => 200,
             'message'   => 'data berhasil diambil',
-            'data'      => '$data'
+            'data'      => $data
         ]);
     }
 
