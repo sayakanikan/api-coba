@@ -16,7 +16,7 @@ class LaporanController extends Controller
      */
     public function index()
     {
-        $data = Laporan::getLaporan()->get();
+        $data = Laporan::all();
 
         return response()->json([
             'status'    => 200,
@@ -55,7 +55,7 @@ class LaporanController extends Controller
             // $laporan   = app('firebase.firestore')->database()->collection('Laporan')->document('defT5uT7SDu9K5RFtIdl');  
             // $firebase_storage_path = 'Laporan/';  
             // $name     = $laporan->id();  
-            // $localfolder = public_path('firebase-temp-uploads') .'/';  
+            // $localfolder = public_path('firebase-temp-uploads') .'/';
             // $extension = $image->getClientOriginalExtension();  
             // $file      = $name. '.' . $extension;  
             // if ($image->move($localfolder, $file)) {  
