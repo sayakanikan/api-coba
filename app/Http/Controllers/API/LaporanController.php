@@ -76,7 +76,7 @@ class LaporanController extends Controller
             return response()->json([
                 'status'    => 200,
                 'message'   => 'data berhasil ditambahkan',
-                // 'data'      => $response
+                'data'      => $response
             ]);
         } catch (\Exception $e) {
             return response()->json([
