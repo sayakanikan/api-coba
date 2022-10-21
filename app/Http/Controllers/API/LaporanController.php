@@ -51,27 +51,27 @@ class LaporanController extends Controller
         ]);
 
         try {
-            $image = $request->file('image'); //image file from frontend  
-            $laporan   = app('firebase.firestore')->database()->collection('Laporan')->document('defT5uT7SDu9K5RFtIdl');  
-            $firebase_storage_path = 'Laporan/';  
-            $name     = $laporan->id();  
-            $localfolder = public_path('firebase-temp-uploads') .'/';  
-            $extension = $image->getClientOriginalExtension();  
-            $file      = $name. '.' . $extension;  
-            if ($image->move($localfolder, $file)) {  
-                $uploadedfile = fopen($localfolder.$file, 'r');  
-                app('firebase.storage')->getBucket()->upload($uploadedfile, ['name' => $firebase_storage_path . $name]);  
-                //will remove from local laravel folder  
-                unlink($localfolder . $file);  
-                echo 'success';  
-            } else {  
-                echo 'error';  
-            }  
+            // $image = $request->file('image'); //image file from frontend  
+            // $laporan   = app('firebase.firestore')->database()->collection('Laporan')->document('defT5uT7SDu9K5RFtIdl');  
+            // $firebase_storage_path = 'Laporan/';  
+            // $name     = $laporan->id();  
+            // $localfolder = public_path('firebase-temp-uploads') .'/';  
+            // $extension = $image->getClientOriginalExtension();  
+            // $file      = $name. '.' . $extension;  
+            // if ($image->move($localfolder, $file)) {  
+            //     $uploadedfile = fopen($localfolder.$file, 'r');  
+            //     app('firebase.storage')->getBucket()->upload($uploadedfile, ['name' => $firebase_storage_path . $name]);  
+            //     //will remove from local laravel folder  
+            //     unlink($localfolder . $file);  
+            //     echo 'success';  
+            // } else {  
+            //     echo 'error';  
+            // }  
 
-            // $fileName = time().$request->file('foto')->getClientOriginalName();
-            // $path = $request->file('foto')->storeAs('uploads/laporans', $fileName);
-            // $validasi['foto'] = $path;
-            // $response = Laporan::create($validasi);
+            $fileName = time().$request->file('foto')->getClientOriginalName();
+            $path = $request->file('foto')->storeAs('uploads/laporans', $fileName);
+            $validasi['foto'] = $path;
+            $response = Laporan::create($validasi);
 
             return response()->json([
                 'status'    => 200,
