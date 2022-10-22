@@ -21,5 +21,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::resource('/laporan', LaporanController::class);
 
-// Route::post('/laporan/{id}', [LaporanController::class, 'update']);
 Route::post('/upload', [LaporanController::class, 'image']);
