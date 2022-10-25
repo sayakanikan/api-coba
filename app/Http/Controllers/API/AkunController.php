@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
-use App\Models\Laporan;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
+use Symfony\Component\HttpFoundation\Response;
 
-class LaporanController extends Controller
+class AkunController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,11 +18,11 @@ class LaporanController extends Controller
      */
     public function index()
     {
-        $data = Laporan::all();
+        $data = User::all();
 
         return response()->json([
             'status'    => 200,
-            'message'   => 'Data Berhasil Diambil',
+            'message'   => 'Data Akun Berhasil Diambil',
             'data'      => $data
         ]);
     }
@@ -45,20 +46,20 @@ class LaporanController extends Controller
     public function store(Request $request)
     {
         $validasi = $request->validate([
-            'user_id'   => 'required',
-            'laporan'   => 'required',
-            'status'    => 'required',
-            'foto'      => 'required'
+            'name'      => 'required',
+            'username'  => 'required',
+            'email'     => 'required|email:dns',
+            'password'  => 'required'
         ]);
 
-        $validasi['user_id'] = auth()->user()->id;
+        $validasi['password'] = bcrypt($validasi['password']);
 
         try {
-            $response = Laporan::create($validasi);
+            $response = User::create($validasi);
 
             return response()->json([
                 'status'    => 200,
-                'message'   => 'Data Berhasil Ditambahkan',
+                'message'   => 'Berhasil Register',
                 'data'      => $response
             ]);
         } catch (\Exception $e) {
@@ -67,8 +68,6 @@ class LaporanController extends Controller
                 'errors'   => $e->getMessage()
             ]);
         }
-
-        
     }
 
     /**
@@ -79,7 +78,7 @@ class LaporanController extends Controller
      */
     public function show($id)
     {
-        
+        //
     }
 
     /**
@@ -103,26 +102,26 @@ class LaporanController extends Controller
     public function update(Request $request, $id)
     {
         $validasi = $request->validate([
-            'user_id'   => 'required',
-            'laporan'   => '',
-            'status'    => 'required',
-            'foto'      => ''
+            'name'      => '',
+            'email'     => 'email:dns',
+            'password'  => ''
         ]);
 
-        $validasi['user_id'] = auth()->user()->id;
+        if ($validasi['password']) {
+            $validasi['password'] = bcrypt($validasi['password']);
+        }
 
         try {
-            Laporan::where('id', $id)->update($validasi);
+            $response = User::where('id', $id)->update($validasi);
 
             return response()->json([
                 'status'    => 200,
-                'message'   => 'Data Berhasil Diupdate',
-                'data'      => $validasi
+                'message'   => 'Akun Berhasil Diupdate',
+                'data'      => $response
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
-                'message'   => 'Err',
+                'message'  => 'Err',
                 'errors'   => $e->getMessage()
             ]);
         }
@@ -137,11 +136,11 @@ class LaporanController extends Controller
     public function destroy($id)
     {
         try {
-            Laporan::destroy($id);
+            User::destroy($id);
 
             return response()->json([
                 'status'    => 200,
-                'message'   => 'Data Berhasil Dihapus'
+                'message'   => 'Akun Berhasil Dihapus'
             ]);
 
         } catch (\Exception $e) {
@@ -152,21 +151,45 @@ class LaporanController extends Controller
         }
     }
 
-    public function image(Request $request){
-        try {
-            $uploadedFileUrl = Cloudinary::upload($request->file('foto')->getRealPath())->getSecurePath();
+    public function login(Request $request){
+        $login = $request->validate([
+            'username'  => 'required',
+            'password'  => 'required'
+        ]);
 
+        if (!Auth::attempt($login)){
             return response()->json([
-                'status'    => 200,
-                'message'   => 'Foto Berhasil Diupload',
-                'url'       => $uploadedFileUrl
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message'   => 'Err',
-                'errors'   => $e->getMessage()
-            ]);
+                'status'    => 'Err',
+                'message'   => 'Username / Password salah'
+            ], Response::HTTP_UNAUTHORIZED);
         }
+
+        $user = Auth::user();
+
+        $token = $user->createToken('token')->plainTextToken;
+
+        $cookie = cookie('jwt', $token, 60*24);
+
+        return response()->json([
+            'status'    => 200,
+            'message'   => 'Berhasil Login'
+        ])->withCookie($cookie);
+    }
+
+    public function getLogin(){
+        return response()->json([
+            'status'    => 200,
+            'message'   => 'Berhasil dapat data login',
+            'data'      => Auth::user()
+        ]);
+    }
+
+    public function logout(){
+        $cookie = Cookie::forget('jwt');
+
+        return response()->json([
+            'status'    => 200,
+            'message'   => 'Berhasil Logout'
+        ])->withCookie($cookie);
     }
 }
