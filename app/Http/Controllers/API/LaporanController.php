@@ -7,6 +7,8 @@ use App\Models\Laporan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class LaporanController extends Controller
 {
@@ -45,7 +47,7 @@ class LaporanController extends Controller
     public function store(Request $request)
     {
         $validasi = $request->validate([
-            'user_id'   => 'required',
+            'user_id'   => '',
             'laporan'   => 'required',
             'status'    => 'required',
             'foto'      => 'required'
@@ -103,7 +105,7 @@ class LaporanController extends Controller
     public function update(Request $request, $id)
     {
         $validasi = $request->validate([
-            'user_id'   => 'required',
+            'user_id'   => '',
             'laporan'   => '',
             'status'    => 'required',
             'foto'      => ''
@@ -163,6 +165,24 @@ class LaporanController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            return response()->json([
+                'message'   => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function history(){
+        try{
+            $user = auth()->user()->id;
+            $data = DB::table('laporans')->where('user_id', $user)->get();
+
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Data berhasil didapatkan',
+                'data'      => $data
+            ]);
+        }catch(Exception $e){
             return response()->json([
                 'message'   => 'Err',
                 'errors'   => $e->getMessage()

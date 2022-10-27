@@ -22,4 +22,9 @@ class Laporan extends Model
         ->join('users','laporans.user_id','=','users.id');
         return $hasil;
     }
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+
 }

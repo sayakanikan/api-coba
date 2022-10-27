@@ -29,4 +29,5 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/logout', [AkunController::class, 'logout']);
     Route::resource('/laporan', LaporanController::class);
     Route::post('/upload', [LaporanController::class, 'image']);
+    Route::get('/history', [LaporanController::class, 'history']);
 });

@@ -170,26 +170,48 @@ class AkunController extends Controller
 
         $cookie = cookie('jwt', $token, 60*24);
 
-        return response()->json([
-            'status'    => 200,
-            'message'   => 'Berhasil Login'
-        ])->withCookie($cookie);
+        try {
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Berhasil Login'
+            ])->withCookie($cookie);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'   => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
     }
 
     public function getLogin(){
-        return response()->json([
-            'status'    => 200,
-            'message'   => 'Berhasil dapat data login',
-            'data'      => Auth::user()
-        ]);
+        try {
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Berhasil dapat data login',
+                'data'      => Auth::user()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'   => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }        
     }
 
     public function logout(){
         $cookie = Cookie::forget('jwt');
 
-        return response()->json([
-            'status'    => 200,
-            'message'   => 'Berhasil Logout'
-        ])->withCookie($cookie);
+        try {
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Berhasil Logout'
+            ])->withCookie($cookie);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'   => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
     }
 }
