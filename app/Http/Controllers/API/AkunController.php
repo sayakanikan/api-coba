@@ -18,6 +18,8 @@ class AkunController extends Controller
      */
     public function index()
     {
+        $this->authorize('admin');
+
         $data = User::all();
 
         return response()->json([
@@ -25,16 +27,6 @@ class AkunController extends Controller
             'message'   => 'Data Akun Berhasil Diambil',
             'data'      => $data
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -49,10 +41,17 @@ class AkunController extends Controller
             'name'      => 'required',
             'username'  => 'required',
             'email'     => 'required|email:dns',
-            'password'  => 'required'
+            'password'  => 'required',
+            'role_id'   => ''
         ]);
 
         $validasi['password'] = bcrypt($validasi['password']);
+        
+        if ($validasi['role_id'] == 1){
+            $validasi['role_id'] = 1;
+        }else{
+            $validasi['role_id'] = 0;
+        }
 
         try {
             $response = User::create($validasi);
@@ -68,28 +67,6 @@ class AkunController extends Controller
                 'errors'   => $e->getMessage()
             ]);
         }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
     }
 
     /**
@@ -122,30 +99,6 @@ class AkunController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message'  => 'Err',
-                'errors'   => $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        try {
-            User::destroy($id);
-
-            return response()->json([
-                'status'    => 200,
-                'message'   => 'Akun Berhasil Dihapus'
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message'   => 'Err',
                 'errors'   => $e->getMessage()
             ]);
         }

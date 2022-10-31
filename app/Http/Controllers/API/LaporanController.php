@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 
 class LaporanController extends Controller
 {
@@ -19,6 +18,8 @@ class LaporanController extends Controller
      */
     public function index()
     {
+        $this->authorize('admin');
+
         $data = Laporan::all();
 
         return response()->json([
@@ -29,16 +30,6 @@ class LaporanController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -46,6 +37,8 @@ class LaporanController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('user');
+
         $validasi = $request->validate([
             'user_id'   => '',
             'laporan'   => 'required',
@@ -69,8 +62,6 @@ class LaporanController extends Controller
                 'errors'   => $e->getMessage()
             ]);
         }
-
-        
     }
 
     /**
@@ -80,17 +71,6 @@ class LaporanController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
     {
         //
     }
@@ -104,6 +84,8 @@ class LaporanController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $this->authorize('admin');
+
         $validasi = $request->validate([
             'user_id'   => '',
             'laporan'   => '',
@@ -138,6 +120,8 @@ class LaporanController extends Controller
      */
     public function destroy($id)
     {
+        $this->authorize('admin');
+
         try {
             Laporan::destroy($id);
 
@@ -173,6 +157,8 @@ class LaporanController extends Controller
     }
 
     public function history(){
+        $this->authorize('user');
+        
         try{
             $user = auth()->user()->id;
             $data = DB::table('laporans')->where('user_id', $user)->get();

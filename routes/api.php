@@ -20,14 +20,17 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
-Route::resource('/register', AkunController::class);
-Route::post('/login', [AkunController::class, 'login']);
+Route::post('/register', [AkunController::class, 'store'])->middleware('guest');
+Route::post('/login', [AkunController::class, 'login'])->middleware('guest');
 
 Route::middleware('auth:sanctum')->group(function(){
-    Route::post('/user', [AkunController::class, 'getLogin']);
     Route::post('/logout', [AkunController::class, 'logout']);
-    Route::resource('/laporan', LaporanController::class);
+    Route::post('/user', [AkunController::class, 'getLogin']);
+    Route::put('/updateuser/{id}', [AkunController::class, 'update']);
+    Route::get('/alluser', [AkunController::class, 'index']);
+
+    // Laporan Controller
+    Route::resource('/laporan', LaporanController::class)->except('show');
     Route::post('/upload', [LaporanController::class, 'image']);
     Route::get('/history', [LaporanController::class, 'history']);
 });
