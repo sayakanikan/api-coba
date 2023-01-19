@@ -41,8 +41,8 @@ CLOUDINARY_URL=(url_cloudinary_anda)
 CLOUDINARY_UPLOAD_PRESET=(cloudinary_upload_preset_anda)
 JWT_SECRET=(jwt_secret_anda)
 ```
-5. Jalankan `php key:generate` di terminal
-6. Jalankan `php migrate` di terminal
+5. Jalankan `php artisan key:generate` di terminal
+6. Jalankan `php artisan migrate` di terminal
 7. Jalankan API dengan `php artisan serve`
 
 ## Catatan
