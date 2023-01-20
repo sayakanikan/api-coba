@@ -11,30 +11,25 @@ use Exception;
 
 class LaporanController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function __construct()
+    {
+        $this->middleware('auth:api', ['except' => []]);
+    }
+
     public function index()
     {
         $this->authorize('admin');
 
-        $data = Laporan::all();
+        // $data = Laporan::getLaporan();
+        $laporan = Laporan::with('user')->get();
 
         return response()->json([
             'status'    => 200,
             'message'   => 'Data Berhasil Diambil',
-            'data'      => $data
+            'laporan'   => $laporan
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $this->authorize('user');
@@ -54,7 +49,7 @@ class LaporanController extends Controller
             return response()->json([
                 'status'    => 200,
                 'message'   => 'Data Berhasil Ditambahkan',
-                'data'      => $response
+                'laporan'   => $response
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -64,28 +59,28 @@ class LaporanController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        //
+        $response = Laporan::where('id', $id)->with('user')->get();
+        $laporan = Laporan::admin();
+        
+        try {
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Data laporan berhasil diambil',
+                'laporan'   => $response,
+                'admin'     => $laporan
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'  => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
-        $this->authorize('admin');
-
         $validasi = $request->validate([
             'user_id'   => '',
             'laporan'   => '',
@@ -93,7 +88,11 @@ class LaporanController extends Controller
             'foto'      => ''
         ]);
 
-        $validasi['user_id'] = auth()->user()->id;
+        if (auth()->user()->role_id === 0){
+            $validasi['user_id'] = auth()->user()->id;
+        } else {
+            $validasi['admin_id'] = auth()->user()->id;
+        }
 
         try {
             Laporan::where('id', $id)->update($validasi);
@@ -101,33 +100,7 @@ class LaporanController extends Controller
             return response()->json([
                 'status'    => 200,
                 'message'   => 'Data Berhasil Diupdate',
-                'data'      => $validasi
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message'   => 'Err',
-                'errors'   => $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $this->authorize('admin');
-
-        try {
-            Laporan::destroy($id);
-
-            return response()->json([
-                'status'    => 200,
-                'message'   => 'Data Berhasil Dihapus'
+                'laporan'   => $validasi
             ]);
 
         } catch (\Exception $e) {
@@ -156,9 +129,7 @@ class LaporanController extends Controller
         }
     }
 
-    public function history(){
-        $this->authorize('user');
-        
+    public function history(){        
         try{
             $user = auth()->user()->id;
             $data = DB::table('laporans')->where('user_id', $user)->get();
@@ -166,7 +137,24 @@ class LaporanController extends Controller
             return response()->json([
                 'status'    => 200,
                 'message'   => 'Data berhasil didapatkan',
-                'data'      => $data
+                'laporan'   => $data
+            ]);
+        }catch(Exception $e){
+            return response()->json([
+                'message'   => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function historyUser($id){        
+        try{
+            $data = DB::table('laporans')->where('user_id', $id)->get();
+
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Data berhasil didapatkan',
+                'laporan'   => $data
             ]);
         }catch(Exception $e){
             return response()->json([

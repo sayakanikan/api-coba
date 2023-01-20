@@ -11,11 +11,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AkunController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function __construct()
+    {
+        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+    }
+    
     public function index()
     {
         $this->authorize('admin');
@@ -29,19 +29,13 @@ class AkunController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function register(Request $request)
     {
         $validasi = $request->validate([
             'name'      => 'required',
-            'username'  => 'required',
+            'username'  => 'required|min:5',
             'email'     => 'required|email:dns',
-            'password'  => 'required',
+            'password'  => 'required|min:5',
             'role_id'   => ''
         ]);
 
@@ -69,66 +63,21 @@ class AkunController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        $validasi = $request->validate([
-            'name'      => '',
-            'email'     => 'email:dns',
-            'password'  => ''
-        ]);
-
-        if ($validasi['password']) {
-            $validasi['password'] = bcrypt($validasi['password']);
-        }
-
-        try {
-            $response = User::where('id', $id)->update($validasi);
-
-            return response()->json([
-                'status'    => 200,
-                'message'   => 'Akun Berhasil Diupdate',
-                'data'      => $response
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message'  => 'Err',
-                'errors'   => $e->getMessage()
-            ]);
-        }
-    }
-
     public function login(Request $request){
         $login = $request->validate([
             'username'  => 'required',
             'password'  => 'required'
         ]);
 
-        if (!Auth::attempt($login)){
+        if (! $token = auth()->attempt($login)) {
             return response()->json([
                 'status'    => 'Err',
                 'message'   => 'Username / Password salah'
-            ], Response::HTTP_UNAUTHORIZED);
+            ], 401);
         }
 
-        $user = Auth::user();
-
-        $token = $user->createToken('token')->plainTextToken;
-
-        $cookie = cookie('jwt', $token, 60*24);
-
         try {
-            return response()->json([
-                'status'    => 200,
-                'message'   => 'Berhasil Login'
-            ])->withCookie($cookie);
-
+            return $this->respondWithToken($token);
         } catch (\Exception $e) {
             return response()->json([
                 'message'   => 'Err',
@@ -149,20 +98,148 @@ class AkunController extends Controller
                 'message'   => 'Err',
                 'errors'   => $e->getMessage()
             ]);
-        }        
+        }
     }
 
     public function logout(){
-        $cookie = Cookie::forget('jwt');
+        auth()->logout();
 
         try {
             return response()->json([
                 'status'    => 200,
                 'message'   => 'Berhasil Logout'
-            ])->withCookie($cookie);
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message'   => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function refresh()
+    {
+        try {
+            return $this->respondWithToken(auth()->refresh());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'   => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
+    }
+
+    protected function respondWithToken($token)
+    {
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60,
+            'role'  => auth()->user()->role_id
+        ]);
+    }   
+
+    public function getUser(){
+        $this->authorize('admin');
+
+        $data = User::where('role_id', 0)->with('laporan')->get();
+
+        return response()->json([
+            'status'    => 200,
+            'message'   => 'Data Akun Berhasil Diambil',
+            'data'      => $data
+        ]);
+    }
+
+    public function showUser($id){
+        $response = User::where('id', $id)->get();
+        try {
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Data akun berhasil diambil',
+                'data'      => $response
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'  => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validasi = $request->validate([
+            'name'      => '',
+            'username'  => '',
+            'email'     => 'email:dns',
+            'password'  => '',
+            'role_id'   => ''
+        ]);
+
+        if(!$validasi['password']){
+            $data = \Illuminate\Support\Facades\DB::table('users')->where('id', $id)->get('password');
+            $validasi['password'] = $data[0]->password;
+        }else if ($validasi['password']) {
+            $validasi['password'] = bcrypt($validasi['password']);
+        }
+
+        try {
+            $response = User::where('id', $id)->update($validasi);
+
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Akun Berhasil Diupdate',
+                'data'      => $response
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'  => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function destroy($id){
+        User::destroy($id);
+        try {
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Akun Berhasil Dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'  => 'Err',
+                'errors'   => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function getAdmin(){
+        $this->authorize('admin');
+
+        $data = User::where('role_id', 1)->get();
+        $laporan = User::with('laporanAdmin');
+
+        return response()->json([
+            'status'    => 200,
+            'message'   => 'Data Akun Berhasil Diambil',
+            'data'      => $data,
+            'laporan'   => $laporan
+        ]);
+    }
+
+    public function showAdmin($id){
+        $response = User::where('id', $id)->get();
+        try {
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Data akun berhasil diambil',
+                'data'      => $response
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message'  => 'Err',
                 'errors'   => $e->getMessage()
             ]);
         }

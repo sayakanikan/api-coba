@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use \Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Model;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Laporan extends Model
+class Laporan extends Model implements JWTSubject
 {
     use HasFactory;
     // protected $table = 'laporans';
@@ -19,7 +20,13 @@ class Laporan extends Model
 
     static function getLaporan(){
         $hasil = DB::table('laporans')
-        ->join('users','laporans.user_id','=','users.id');
+        ->join('users','laporans.user_id','=','users.id')->get();
+        return $hasil;
+    }
+
+    static function admin(){
+        $hasil = DB::table('laporans')
+        ->join('users','laporans.admin_id','=','users.id')->select('users.name')->first();
         return $hasil;
     }
 
@@ -27,4 +34,13 @@ class Laporan extends Model
         return $this->belongsTo(User::class);
     }
 
+    // JWT
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }
