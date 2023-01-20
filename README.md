@@ -33,17 +33,18 @@ Endpoint jika dijalankan pada localserver akan menjadi http://127.0.0.1:8000/api
 1. Clone repositori ini di komputer local anda, cara untuk clone repositori ada pada tutorial berikut: https://medium.com/@sarascahya/cara-clone-sebuah-repository-di-github-aa633c3260aa
 2. Masuk ke folder tempat aplikasi berada dengan menggunakan `cd` pada terminal
 3. Rename file `.env.example` menjadi `.env`, dan set database di `.env` sesuai database yang anda miliki.
-4. Tambahkan beberapa key dan value di file`.env`, sebagai berikut:
+4. Daftar atau masuk ke akun Cloudinary anda untuk mendapatkan api key, api secret, url, dan upload preset.
+5. Tambahkan beberapa key dan value di file`.env`, sebagai berikut:
 ```
 CLOUDINARY_API_KEY=(api_key_cloudinary_anda)
 CLOUDINARY_API_SECRET=(api_secret_cloudinary_anda)
 CLOUDINARY_URL=(url_cloudinary_anda)
 CLOUDINARY_UPLOAD_PRESET=(cloudinary_upload_preset_anda)
-JWT_SECRET=(jwt_secret_anda)
 ```
-5. Jalankan `php artisan key:generate` di terminal
-6. Jalankan `php artisan migrate` di terminal
-7. Jalankan API dengan `php artisan serve`
+6. Jalankan `php artisan jwt:secret` untuk mengenerate jwt key.
+7. Jalankan `php artisan key:generate` di terminal.
+8. Jalankan `php artisan migrate` di terminal.
+9. Jalankan API dengan `php artisan serve`.
 
 ## Catatan
 Silahkan gunakan API ini, dan gunakan mobile appsnya pada https://github.com/ilse31/Insiden-Report, serta gunakan admin-side nya pada https://github.com/sayakanikan/admin-insiden-report
